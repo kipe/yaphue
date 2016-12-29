@@ -57,7 +57,10 @@ class Bridge(object):
         configuration_file = os.path.join(self.__configuration_path, 'config.json')
         configuration = self.__load_configuration()
         with open(configuration_file, 'w') as f:
-            configuration[self.ip].update(new_configuration)
+            if self.ip in configuration:
+                configuration[self.ip].update(new_configuration)
+            else:
+                configuration[self.ip] = new_configuration
             f.write(json.dumps(configuration))
 
     def api(self, endpoint, use_username):
