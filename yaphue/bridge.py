@@ -33,6 +33,10 @@ class Bridge(object):
     def __load_configuration(self):
         configuration_file = os.path.join(self.__configuration_path, 'config.json')
         configuration = {}
+
+        if not os.path.exists(configuration_file):
+            return configuration
+
         with open(configuration_file, 'r') as f:
             try:
                 configuration = json.loads(f.read())
