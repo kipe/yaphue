@@ -40,8 +40,8 @@ class Bridge(object):
         with open(configuration_file, 'r') as f:
             try:
                 configuration = json.loads(f.read())
-            except (io.UnsupportedOperation, json.decoder.JSONDecodeError):
-                configuration = {}
+            except:
+                return configuration
         return configuration
 
     @property
@@ -104,7 +104,7 @@ class Bridge(object):
     def username(self):
         if self.__username:
             return self.__username
-        raise HueError('username not set!')
+        raise HueError('username not set! Have you authorized?')
 
     @property
     def lights(self):
