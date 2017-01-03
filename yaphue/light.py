@@ -33,6 +33,10 @@ class Light(object):
                     'ct': self._temperature,
                 }.items() if value is not None
             }
+            if self.on else
+            {
+                'on': self.on,
+            }
         )
 
     @property
