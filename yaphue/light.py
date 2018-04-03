@@ -1,4 +1,4 @@
-from .rgb.rgbxy import Converter, GamutA
+from rgbxy import Converter, GamutA
 
 
 class Light(object):
