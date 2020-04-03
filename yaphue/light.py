@@ -16,30 +16,17 @@ class Light(object):
         self._saturation = state.get('sat')
         self._xy = state.get('xy')
         self._temperature = state.get('ct')
+        self._colormode = state.get('colormode')
         self.reachable = state.get('reachable')
 
     def __repr__(self):
         return '<Light "%s">' % (self.id)
 
-    def set(self):
+    def _set(self, **args):
+        print(args)
         self.bridge._put(
             'lights/%s/state' % (self.id),
-            {
-                key: value
-                for key, value in {
-                    'on': self._on,
-                    'bri': self._brightness,
-                    # Features not tested yet are commented out.
-                    # 'hue': self._hue,
-                    # 'sat': self._saturation,
-                    'xy': self._xy,
-                    'ct': self._temperature,
-                }.items() if value is not None
-            }
-            if self.on else
-            {
-                'on': self.on,
-            }
+            args
         )
 
     @property
@@ -63,6 +50,7 @@ class Light(object):
     @on.setter
     def on(self, value):
         self._on = value
+        self._set(on=value)
 
     @property
     def brightness(self):
@@ -70,14 +58,21 @@ class Light(object):
 
     @brightness.setter
     def brightness(self, value):
+        if 'brightness' not in self.capabilities:
+            raise ValueError('Setting brightness is not supported by the light.')
+
         if not isinstance(value, int):
             raise ValueError('value must be an integer.')
+
         if value > 254:
             value = 254
         if value < 1:
             value = 1
 
         self._brightness = value
+        if not self.on:
+            self.on = True
+        self._set(brightness=self._brightness)
 
     @property
     def temperature(self):
@@ -97,16 +92,9 @@ class Light(object):
         mired = int(1000000 / value)
 
         self._temperature = mired
-
-    @property
-    def hue(self):
-        return self._hue
-
-    @hue.setter
-    def hue(self, value):
-        if 'hue' not in self.capabilities:
-            raise ValueError('Setting hue is not supported by the light.')
-        self._hue = value
+        if not self.on:
+            self.on = True
+        self._set(ct=self._temperature)
 
     @property
     def xy(self):
@@ -117,6 +105,9 @@ class Light(object):
         if 'xy' not in self.capabilities:
             raise ValueError('Setting color is not supported by the light.')
         self._xy = value
+        if not self.on:
+            self.on = True
+        self._set(xy=self.xy)
 
     @property
     def rgb(self):
@@ -126,17 +117,7 @@ class Light(object):
     @rgb.setter
     def rgb(self, rgb):
         x, y = Converter().rgb_to_xy(*rgb)
-        self._xy = [x, y]
-
-    @property
-    def saturation(self):
-        return self._saturation
-
-    @saturation.setter
-    def saturation(self, value):
-        if 'saturation' not in self.capabilities:
-            raise ValueError('Setting saturation is not supported by the light.')
-        self._saturation = value
+        self.xy = [x, y]
 
     def alert(self):
         self.bridge._put(
