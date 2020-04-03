@@ -1,5 +1,4 @@
 import os
-import io
 import json
 import requests
 import socket
@@ -44,8 +43,8 @@ class Bridge(object):
         with open(self.configuration_file, 'r') as f:
             try:
                 configuration = json.loads(f.read())
-            except (io.UnsupportedOperation, json.decoder.JSONDecodeError):
-                configuration = {}
+            except:
+                return configuration
         return configuration
 
     @property
@@ -56,8 +55,11 @@ class Bridge(object):
     @configuration.setter
     def configuration(self, new_configuration):
         configuration = self.__load_configuration()
-        with open(self.configuration_file, 'w') as f:
-            configuration[self.id] = new_configuration
+        with open(configuration_file, 'w') as f:
+            if self.id in configuration:
+                configuration[self.id].update(new_configuration)
+            else:
+                configuration[self.id] = new_configuration
             f.write(json.dumps(configuration))
 
     @property
@@ -120,7 +122,7 @@ class Bridge(object):
     def username(self):
         if self.__username:
             return self.__username
-        raise HueError('username not set!')
+        raise HueError('username not set! Have you authorized?')
 
     @property
     def lights(self):
