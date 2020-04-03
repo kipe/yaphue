@@ -6,7 +6,7 @@ except ImportError:
 
 setup(
     name='yaphue',
-    version='0.0.1',
+    version='0.2.1',
     description='Yet Another Python / Philips Hue -library',
     author='Kimmo Huoman',
     author_email='kipenroskaposti@gmail.com',

@@ -13,13 +13,13 @@ class HueError(Exception):
 class Bridge(object):
     APPLICATION_NAME = 'yaphue'
 
-    def __init__(self, ip, id='unknown', name='unknown', configuration_path=None):
-        self.ip = ip
+    def __init__(self, id, ip=None, configuration_path=None):
         self.id = id
-        self.name = name
+
         self.__lights = None
         self.__configuration_path = configuration_path or os.environ.get('HUE_PATH') or os.path.expanduser('~/.config/yaphue')
         self.__username = self.configuration.get('username')
+        self._ip = ip
 
     def __repr__(self):
         return '<Bridge "%s">' % (self.ip)
@@ -30,10 +30,18 @@ class Bridge(object):
                 if 'error' in message.keys():
                     raise HueError(message['error']['description'])
 
+    @property
+    def configuration_file(self):
+        if not os.path.exists(self.__configuration_path):
+            os.makedirs(self.__configuration_path)
+        full_path = os.path.join(self.__configuration_path, 'config.json')
+        # touch the file, creating it if if doesn't exist
+        open(full_path, 'a').close()
+        return full_path
+
     def __load_configuration(self):
-        configuration_file = os.path.join(self.__configuration_path, 'config.json')
         configuration = {}
-        with open(configuration_file, 'r') as f:
+        with open(self.configuration_file, 'r') as f:
             try:
                 configuration = json.loads(f.read())
             except (io.UnsupportedOperation, json.decoder.JSONDecodeError):
@@ -43,18 +51,30 @@ class Bridge(object):
     @property
     def configuration(self):
         configuration = self.__load_configuration()
-        return configuration.get(self.ip, {})
+        return configuration.get(self.id, {})
 
     @configuration.setter
     def configuration(self, new_configuration):
-        if not os.path.exists(self.__configuration_path):
-            os.makedirs(self.__configuration_path)
-
-        configuration_file = os.path.join(self.__configuration_path, 'config.json')
         configuration = self.__load_configuration()
-        with open(configuration_file, 'w') as f:
-            configuration[self.ip].update(new_configuration)
+        with open(self.configuration_file, 'w') as f:
+            configuration[self.id] = new_configuration
             f.write(json.dumps(configuration))
+
+    @property
+    def ip(self):
+        if self._ip:
+            return self._ip
+
+        # Try to discover the device
+        for bridge in Bridge.discover():
+            if bridge.id == self.id:
+                self._ip = bridge.ip
+                break
+
+        # If bridge cannot be found, raise an AttributeError
+        if self._ip is None:
+            raise AttributeError('IP address is not set and cannot be discovered')
+        return self._ip
 
     def api(self, endpoint, use_username):
         if use_username:
@@ -119,6 +139,6 @@ class Bridge(object):
         r.raise_for_status()
 
         return [
-            Bridge(ip=bridge['internalipaddress'], id=bridge.get('id'), name=bridge.get('name'))
+            Bridge(id=bridge['id'], ip=bridge['internalipaddress'])
             for bridge in r.json()
         ]
