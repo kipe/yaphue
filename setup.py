@@ -15,6 +15,6 @@ setup(
         'yaphue',
     ],
     install_requires=[
-        'requests==2.12.4',
+        'requests==2.20.0',
         'rgbxy==0.5.0',
     ])
