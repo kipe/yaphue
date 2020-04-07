@@ -15,7 +15,6 @@ class Bridge(object):
     def __init__(self, id, ip=None, configuration_path=None):
         self.id = id
 
-        self.__lights = None
         self.__configuration_path = configuration_path or os.environ.get('HUE_PATH') or os.path.expanduser('~/.config/yaphue')
         self.__username = self.configuration.get('username')
         self._ip = ip
@@ -126,14 +125,10 @@ class Bridge(object):
 
     @property
     def lights(self):
-        if self.__lights:
-            return self.__lights
-        response = self._get('lights')
-        self.__lights = {
+        return {
             int(id): Light(self, id, **attrs)
-            for id, attrs in response.items()
+            for id, attrs in self._get('lights').items()
         }
-        return self.__lights
 
     @staticmethod
     def discover():

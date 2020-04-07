@@ -23,7 +23,6 @@ class Light(object):
         return '<Light "%s">' % (self.id)
 
     def _set(self, **args):
-        print(args)
         self.bridge._put(
             'lights/%s/state' % (self.id),
             args
