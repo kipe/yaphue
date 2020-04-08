@@ -71,7 +71,7 @@ class Light(object):
         self._brightness = value
         if not self.on:
             self.on = True
-        self._set(brightness=self._brightness)
+        self._set(bri=self._brightness)
 
     @property
     def temperature(self):
