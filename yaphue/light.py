@@ -35,8 +35,8 @@ class Light(object):
             for key, value in {
                 'on': self._on,
                 'brightness': self._brightness,
-                # 'hue': self._hue,
-                # 'saturation': self._saturation,
+                'hue': self._hue,
+                'saturation': self._saturation,
                 'xy': self._xy,
                 'temperature': self._temperature,
             }.items() if value is not None
@@ -107,6 +107,32 @@ class Light(object):
         if not self.on:
             self.on = True
         self._set(xy=self.xy)
+
+    @property
+    def hue(self):
+        return self._hue
+
+    @hue.setter
+    def hue(self, value):
+        if 'hue' not in self.capabilities:
+            raise ValueError('Setting hue is not supported by the light.')
+        self._hue = value
+        if not self.on:
+            self.on = True
+        self._set(hue=self.hue)
+
+    @property
+    def saturation(self):
+        return self._saturation
+
+    @saturation.setter
+    def saturation(self, value):
+        if 'saturation' not in self.capabilities:
+            raise ValueError('Setting color is not supported by the light.')
+        self._saturation = value
+        if not self.on:
+            self.on = True
+        self._set(sat=self.saturation)
 
     @property
     def rgb(self):
