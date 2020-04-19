@@ -54,7 +54,7 @@ class Bridge(object):
     @configuration.setter
     def configuration(self, new_configuration):
         configuration = self.__load_configuration()
-        with open(configuration_file, 'w') as f:
+        with open(self.configuration_file, 'w') as f:
             if self.id in configuration:
                 configuration[self.id].update(new_configuration)
             else:
