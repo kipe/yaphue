@@ -132,7 +132,7 @@ class Bridge(object):
 
     @staticmethod
     def discover():
-        r = requests.get('https://www.meethue.com/api/nupnp')
+        r = requests.get('https://discovery.meethue.com')
         r.raise_for_status()
 
         return [
